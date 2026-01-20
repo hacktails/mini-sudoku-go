@@ -1,0 +1,89 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  TAP_REPO: hacktails/homebrew-tap
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build binaries
+        run: |
+          mkdir -p dist
+          GOOS=darwin GOARCH=amd64 go build -o dist/mini-sudoku-go_darwin_amd64 ./cmd/mini-sudoku-go
+          GOOS=darwin GOARCH=arm64 go build -o dist/mini-sudoku-go_darwin_arm64 ./cmd/mini-sudoku-go
+          GOOS=linux GOARCH=amd64 go build -o dist/mini-sudoku-go_linux_amd64 ./cmd/mini-sudoku-go
+          GOOS=linux GOARCH=arm64 go build -o dist/mini-sudoku-go_linux_arm64 ./cmd/mini-sudoku-go
+
+      - name: Package archives
+        run: |
+          cd dist
+          for bin in mini-sudoku-go_*; do
+            tar -czf "${bin}.tar.gz" "$bin"
+            zip -q "${bin}.zip" "$bin"
+          done
+
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*
+
+      - name: Update Homebrew tap
+        if: ${{ secrets.TAP_GITHUB_TOKEN != '' }}
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          OWNER_REPO="${GITHUB_REPOSITORY}"
+
+          SHA_DARWIN_ARM64="$(sha256sum dist/mini-sudoku-go_darwin_arm64.tar.gz | awk '{print $1}')"
+          SHA_DARWIN_AMD64="$(sha256sum dist/mini-sudoku-go_darwin_amd64.tar.gz | awk '{print $1}')"
+          SHA_LINUX_ARM64="$(sha256sum dist/mini-sudoku-go_linux_arm64.tar.gz | awk '{print $1}')"
+          SHA_LINUX_AMD64="$(sha256sum dist/mini-sudoku-go_linux_amd64.tar.gz | awk '{print $1}')"
+
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPO}.git" tap
+          FORMULA="tap/Formula/mini-sudoku-go.rb"
+
+          ruby -0777 -i -pe "gsub(/version \\\"[^\\\"]+\\\"/, 'version \\\"#{ENV[\"VERSION\"]}\\\"')" "$FORMULA"
+
+          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_darwin_arm64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_darwin_arm64.tar.gz\")" "$FORMULA"
+          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_darwin_amd64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_darwin_amd64.tar.gz\")" "$FORMULA"
+          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_linux_arm64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_linux_arm64.tar.gz\")" "$FORMULA"
+          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_linux_amd64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_linux_amd64.tar.gz\")" "$FORMULA"
+
+          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_darwin_arm64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_DARWIN_ARM64']}\\\\2\")" "$FORMULA"
+          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_darwin_amd64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_DARWIN_AMD64']}\\\\2\")" "$FORMULA"
+          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_linux_arm64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_LINUX_ARM64']}\\\\2\")" "$FORMULA"
+          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_linux_amd64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_LINUX_AMD64']}\\\\2\")" "$FORMULA"
+
+          cd tap
+          if git status --porcelain | grep -q .; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add Formula/mini-sudoku-go.rb
+            git commit -m "mini-sudoku-go ${TAG}"
+            git push
+          else
+            echo "No formula changes to commit."
+          fi

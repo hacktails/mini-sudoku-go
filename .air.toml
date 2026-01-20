@@ -1,0 +1,15 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/mini-sudoku-go ./cmd/mini-sudoku-go"
+  bin = "tmp/mini-sudoku-go"
+  delay = 300
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "vendor"]
+
+[log]
+  time = true
+
+[screen]
+  clear_on_rebuild = true
