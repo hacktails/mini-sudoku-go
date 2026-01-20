@@ -49,10 +49,13 @@ jobs:
             dist/*
 
       - name: Update Homebrew tap
-        if: ${{ secrets.TAP_GITHUB_TOKEN != '' }}
         env:
           TAP_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
         run: |
+          if [ -z "${TAP_TOKEN}" ]; then
+            echo "TAP_GITHUB_TOKEN not set; skipping tap update."
+            exit 0
+          fi
           TAG="${GITHUB_REF_NAME}"
           VERSION="${TAG#v}"
           OWNER_REPO="${GITHUB_REPOSITORY}"
