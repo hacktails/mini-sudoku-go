@@ -1,84 +1,84 @@
-# Mini Sudoku Go
+# 🧩 Mini Sudoku Go
 
 ![Mini Sudoku Go](docs/mini-sudoku-go.png)
 
-A beautiful terminal Sudoku in Go, built with Bubble Tea + Lip Gloss. Supports 4x4, 6x6, and 9x9 boards with notes, hints, undo/redo, strict mode, and save slots.
+[![Go Report Card](https://goreportcard.com/badge/github.com/hacktails/mini-sudoku-go)](https://goreportcard.com/report/github.com/hacktails/mini-sudoku-go)
+[![License](https://img.shields.io/github/license/hacktails/mini-sudoku-go)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/hacktails/mini-sudoku-go)](https://github.com/hacktails/mini-sudoku-go/releases)
+[![Build Status](https://github.com/hacktails/mini-sudoku-go/actions/workflows/release.yml/badge.svg)](https://github.com/hacktails/mini-sudoku-go/actions/workflows/release.yml)
 
-## Features
+**Your terminal just got a whole lot cozier.**
 
-- 4x4 / 6x6 / 9x9 boards
-- Notes (candidate marks)
-- Smart hints (logic first, then reveal)
-- Undo/redo
-- Strict mode (mistake limit)
-- Save slots (1–3)
-- Best time tracking
-- Curated puzzle library + generator fallback
+Mini Sudoku Go is a delightful, polished Sudoku experience right in your CLI. Built with the lovely [Bubble Tea](https://github.com/charmbracelet/bubbletea) & [Lip Gloss](https://github.com/charmbracelet/lipgloss).
 
-## Install
+Whether you're killing time while your code compiles or you're a hardcore logic puzzle fan, we've got you covered with 4x4, 6x6, and classic 9x9 boards.
 
-### Homebrew (planned)
+## ✨ Features
 
-Once the tap is published, you will be able to install with:
+- **🎛 Flexible Boards:** Quick 4x4 snacks, 6x6 mid-sized meals, or the full 9x9 feast.
+- **📝 Notes Mode:** Pencil in candidates like a pro.
+- **💡 Smart Hints:** Stuck? We'll give you a logical nudge before spoiling the fun.
+- **↩️ Undo/Redo:** Because everyone deserves a second chance (or third).
+- **😈 Strict Mode:** Challenge yourself with a mistake limit. High stakes!
+- **💾 Save Slots:** 3 slots to keep your progress safe.
+- **🏆 Best Times:** Race against the clock and beat your personal bests.
+
+## 🚀 How to Play
+
+### 🍺 Homebrew (Preferred)
+
+The easiest way to get started on macOS or Linux:
 
 ```bash
 brew install hacktails/tap/mini-sudoku-go
 ```
 
-### Go
+### 🐹 Go Install
+
+Alternatively, if you have Go installed:
 
 ```bash
 go install github.com/hacktails/mini-sudoku-go/cmd/mini-sudoku-go@latest
 ```
 
-## Run locally
+### Run Locally
+
+Clone and run instantly:
 
 ```bash
 go run ./cmd/mini-sudoku-go
 ```
 
-## Controls
+## 🎮 Controls
 
-- Move: Arrow keys or `h` `j` `k` `l`
-- Enter: `1–9` (respects board size)
-- Notes: `p` toggle, `c` clear notes in cell
-- Validate: `v`
-- Hint: `H`
-- Undo/Redo: `u` / `y`
-- Strict mode: `m`
-- Size: `s` then `4` / `6` / `9`
-- Difficulty: `d`
-- Save/Load: `w` / `o` then slot `1–3`
-- Help: `?`
-- Quit: `q`
+Navigate the grid and master the numbers:
 
-## Development
+| Action | Key |
+| :--- | :--- |
+| **Move** | Arrows or `h` `j` `k` `l` |
+| **Enter Number** | `1`–`9` |
+| **Toggle Notes** | `p` (Pencil) |
+| **Clear Notes** | `c` |
+| **Validate** | `v` |
+| **Get Hint** | `H` |
+| **Undo / Redo** | `u` / `y` |
+| **Strict Mode** | `m` |
+| **Change Size** | `s` then `4`, `6`, or `9` |
+| **Difficulty** | `d` |
+| **Save / Load** | `w` / `o` then `1`–`3` |
+| **Help** | `?` |
+| **Quit** | `q` |
 
-### Hot reload
+## 🛠️ Development
 
-```bash
-go install github.com/air-verse/air@latest
-air
-```
+Want to hack on the game? Awesome!
 
-### Formatting
+### Project Structure
 
-```bash
-gofmt -w .
-```
+- `cmd/mini-sudoku-go/`: The main entry point.
+- `internal/sudoku/`: Where the magic happens (Game logic, UI, etc).
+- `puzzles.json`: Our stash of curated brain-teasers.
 
-## Project structure
+## 📜 License
 
-```text
-cmd/mini-sudoku-go/    Entrypoint
-internal/sudoku/       Game logic, UI, persistence
-puzzles.json           Curated puzzles
-```
-
-## Releases
-
-Tag releases like `v0.1.0`. The GitHub Actions workflow builds binaries and attaches them to the release.
-
-## License
-
-MIT © Hacktails
+MIT © Hacktails — Hack away!
