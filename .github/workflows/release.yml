@@ -68,17 +68,42 @@ jobs:
           git clone "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPO}.git" tap
           FORMULA="tap/Formula/mini-sudoku-go.rb"
 
-          ruby -0777 -i -pe "gsub(/version \\\"[^\\\"]+\\\"/, 'version \\\"#{ENV[\"VERSION\"]}\\\"')" "$FORMULA"
+          cat > "$FORMULA" <<EOF
+          class MiniSudokuGo < Formula
+            desc "Beautiful terminal Sudoku in Go (4x4, 6x6, 9x9)"
+            homepage "https://github.com/${OWNER_REPO}"
+            version "${VERSION}"
+            license "MIT"
 
-          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_darwin_arm64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_darwin_arm64.tar.gz\")" "$FORMULA"
-          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_darwin_amd64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_darwin_amd64.tar.gz\")" "$FORMULA"
-          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_linux_arm64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_linux_arm64.tar.gz\")" "$FORMULA"
-          ruby -0777 -i -pe "gsub(%r{https://github.com/.*/releases/download/v[^/]+/mini-sudoku-go_linux_amd64.tar.gz}, \"https://github.com/#{ENV['OWNER_REPO']}/releases/download/#{ENV['TAG']}/mini-sudoku-go_linux_amd64.tar.gz\")" "$FORMULA"
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/${OWNER_REPO}/releases/download/${TAG}/mini-sudoku-go_darwin_arm64.tar.gz"
+                sha256 "${SHA_DARWIN_ARM64}"
+              else
+                url "https://github.com/${OWNER_REPO}/releases/download/${TAG}/mini-sudoku-go_darwin_amd64.tar.gz"
+                sha256 "${SHA_DARWIN_AMD64}"
+              end
+            end
 
-          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_darwin_arm64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_DARWIN_ARM64']}\\\\2\")" "$FORMULA"
-          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_darwin_amd64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_DARWIN_AMD64']}\\\\2\")" "$FORMULA"
-          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_linux_arm64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_LINUX_ARM64']}\\\\2\")" "$FORMULA"
-          ruby -0777 -i -pe "gsub(/(mini-sudoku-go_linux_amd64.tar.gz\\\"\\n\\s*sha256 \\\")\\h+(\\\")/, \"\\\\1#{ENV['SHA_LINUX_AMD64']}\\\\2\")" "$FORMULA"
+            on_linux do
+              if Hardware::CPU.arm?
+                url "https://github.com/${OWNER_REPO}/releases/download/${TAG}/mini-sudoku-go_linux_arm64.tar.gz"
+                sha256 "${SHA_LINUX_ARM64}"
+              else
+                url "https://github.com/${OWNER_REPO}/releases/download/${TAG}/mini-sudoku-go_linux_amd64.tar.gz"
+                sha256 "${SHA_LINUX_AMD64}"
+              end
+            end
+
+            def install
+              bin.install Dir["mini-sudoku-go_*"].first => "mini-sudoku-go"
+            end
+
+            test do
+              assert_predicate bin/"mini-sudoku-go", :executable?
+            end
+          end
+          EOF
 
           cd tap
           if git status --porcelain | grep -q .; then
